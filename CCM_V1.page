@@ -1,0 +1,227 @@
+<apex:page docType="html-5.0">
+    <html>
+            <style>
+                body {
+                background: linear-gradient(to right, #4ca1af, #c4e0e5); 
+
+
+                    font-family: 'Century Gothic';
+                    margin: 0;
+                    padding: 0;
+                    animation: background 20s ease infinite;
+                }
+                
+                @keyframes background {
+                    0% {
+                        background-position: 0% 50%;
+                    }
+                    50% {
+                        background-position: 100% 50%;
+                    }
+                    100% {
+                        background-position: 0% 50%;
+                    }
+                }
+                
+                /* Header styles */
+                header {
+                    background: rgba(0,0,0,0.7);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    z-index: 1;
+                }
+                
+                header h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    color: #eee;
+                }
+                #snapshot {
+    display: none;
+}
+                
+                /* Main content styles */
+                main {
+                    margin-top: 80px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                }
+                
+               #player {
+    margin-bottom: 16px;
+    border-radius: 8px;
+}
+                     #capture {
+    margin-top: 16px;
+    margin-right: 10px;
+    background: #0077c2;
+    color: #fff;
+    cursor: pointer;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    transition: background 0.2s;
+}
+
+#capture:hover {
+    background:  linear-gradient( 68.4deg,  rgba(99,251,215,1) -0.4%, rgba(5,222,250,1) 100.2% );
+}
+
+#capture1 {
+    margin-top: 16px;
+    margin-right: 10px;
+    background: #0077c2;
+    color: #fff;
+    cursor: pointer;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    transition: background 0.2s;
+}
+
+#capture1:hover {
+    background:  linear-gradient( 68.4deg,  rgba(99,251,215,1) -0.4%, rgba(5,222,250,1) 100.2% );
+}
+
+
+                .result-container {
+                    margin-top: 16px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                input[type="text"] {
+                    background-color: transparent;
+                    border: none;
+                    border-bottom: 2px solid #ccc;
+                    color: #eee;
+                    font-size: 20px;
+                    padding: 8px;
+                    margin: 8px;
+                    text-align: center;
+                    width: 90%;
+                }
+                
+                input[type="text"]:focus {
+                    outline: none;
+                    border-bottom: 2px solid #88f;
+                }
+                
+                #cameraView {
+    display: none;
+}
+                #player {
+                display: true;
+                }
+               
+            </style>
+            <main>
+              
+              	<div id ="cameraView">
+              	</div>
+                <video id="player" autoplay="true"></video>
+                <div>
+                <button id="capture" onclick="startScanner(); return false;">Start Scanner</button>
+                   <!-- <button id="capture1" onclick="startScanner(); return false;">Scan Barcode</button> -->
+    
+                </div>
+                
+                <canvas id="snapshot" width="320" height="240"></canvas>
+                <div class="result-container">
+                    <input type="text" id="result1" placeholder="Extracted Alpha Code"></input>
+                <input type="text" id="result2" placeholder="Extracted Barcode"></input>
+                </div>
+     
+            </main>
+       
+    
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.3/tesseract.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>  
+
+        <script>
+
+            const player = document.getElementById('player');
+            const snapshotZone = document.getElementById('snapshot');
+            const captureButton = document.getElementById('capture');
+			const capturebutton1 = document.getElementById('capture1');
+            const result1 = document.getElementById('result1');
+			const result2 = document.getElementById('result2');
+			//Test URL
+			const url = "https://gcdnb.pbrd.co/images/OD6Jx3MxQnoD.jpg";
+
+			navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                player.srcObject = stream;
+            });
+        
+			captureButton.addEventListener('click', function capture() {
+    const context = snapshot.getContext('2d');
+    context.drawImage(player, 0, 0, snapshotZone.width, snapshotZone.height);
+
+    Tesseract.recognize(snapshotZone, 'eng', { logger: m => console.log(m) }).then(({ data: { text } }) => {
+        const regex1 = /[a-zA-Z]{2}\d{6}/;
+        const regex2 = /[a-zA-Z]{3}\d{6}/;
+        const match1 = text.match(regex1);
+        const match2 = text.match(regex2);
+        if (match1) {
+            result1.value = match1[0];
+            return;
+                                                                                             //clearInterval(interval);
+        } else {
+            console.log(text);
+        }
+        if (match2) {
+            result2.value = match2[0];
+            return;
+                                                                                             //clearInterval(interval);                                                                              
+        } else {
+            console.log(text);
+        }
+        
+        // If "Extracted Alpha Code" field is not filled, run Tesseract OCR again
+       // let interval = setInterval(capture, 5000);
+    });
+});
+
+                                                                                                        
+                                                                                                         
+ 		function startScanner() {
+        	Quagga.init({
+            	inputStream : {
+                name : "Live",
+                type : "LiveStream",
+                target: document.querySelector('#cameraView')
+            },
+            decoder : {
+                readers : ["code_128_reader"]
+            }
+        }, function(err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log("Initialization finished. Starting scanner...");
+            Quagga.start();
+        });
+
+        Quagga.onDetected(function(result) {
+            console.log(result);
+            result2.value = result.codeResult.code;
+            Quagga.stop();
+        });
+    }
+       </script>
+    </html>
+</apex:page>
